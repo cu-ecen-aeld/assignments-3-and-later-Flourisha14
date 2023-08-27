@@ -3,8 +3,6 @@ searchstr=$2
 numberoffiles=0
 matchingstrings=0
 
-filesdir="${filesdir#/}"
-
 if [ -z "$filesdir" ]; then
     echo "path to a directory is missing"
     exit 1
