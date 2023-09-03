@@ -80,18 +80,8 @@ bool do_exec(int count, ...)
     }
     else if (pid == 0) 
     {
-        if(count == 3)
-        {
-            if (command[2][0] != '/')
-            {
-                return false;
-            }
-        }
-
-        execv (command[0], (command+1));
-        perror("execv");
-
-        return false;
+        execv (command[0], command);
+        exit(-1);
     }
 
     waitpid (pid, &status, 0);
@@ -140,19 +130,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     int status;
     pid_t pid;
 
-    int fd = open(outputfile, O_WRONLY | O_TRUNC | O_CREAT, 0644);
-    if (fd == -1) 
-    {
-        return false;
-    }
-    else
-    {
-        if (dup2(fd, 1) == -1) 
-        {
-            return false;
-        }
-    }
-
     pid = fork ();
 
     if (pid == -1)
@@ -162,12 +139,21 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     }
     else if (pid == 0) 
     {
-        execv (command[0], (command+1));
-        perror("execv");
+        int fd = open(outputfile, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        if (fd == -1) 
+        {
+            return false;
+        }
+        else
+        {
+            if (dup2(fd, 1) == -1) 
+            {
+                return false;
+            }
+        }
 
-        close(fd);
-
-        return false;
+        execv (command[0], command);
+        exit(-1);
     }
 
     waitpid (pid, &status, 0);
@@ -175,14 +161,11 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     {
         if(WEXITSTATUS(status))
         {
-            close(fd);
             return false;
         }
     }
 
     va_end(args);
-
-    close(fd);
 
     return true;
 }
