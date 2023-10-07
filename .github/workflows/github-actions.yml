@@ -17,11 +17,10 @@ jobs:
             run: ./unit-test.sh
     full-test:
         container: cuaesd/aesd-autotest:assignment2
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         steps:
           - uses: actions/checkout@v2
           - name: Checkout submodules
             run : git submodule update --init --recursive
-          - uses: textbook/git-checkout-submodule-action@2.1.1
           - name: Run full test
             run: ./full-test.sh
