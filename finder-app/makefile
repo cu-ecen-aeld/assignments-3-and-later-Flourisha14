@@ -4,7 +4,11 @@ TARGET = writer
 SOURCE = writer.c
 
 ifdef CROSS_COMPILE
-    CC = $(CROSS_COMPILE)gcc
+	ifneq ($(shell echo $(CROSS_COMPILE) | grep -- '-$$'),)
+    	CC = $(CROSS_COMPILE)gcc
+	else
+		CC = $(CROSS_COMPILE)
+	endif
 endif
 
 all: $(TARGET)
