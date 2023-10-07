@@ -23,10 +23,10 @@ jobs:
           - name: Checkout submodules
             run : git submodule update --init --recursive
           - name: Install AArch64 toolchain
-            run : sudo apt-get install gcc-aarch64-linux-gnu
+            run : sudo apt-get install -y gcc-aarch64-linux-gnu
           - name: Install Flex
-            run : sudo apt-get install flex
+            run : sudo apt-get install -y flex
           - name: Install Bison
-            run : sudo apt-get install bison
+            run : sudo apt-get install -y bison
           - name: Run full test
             run: ./full-test.sh
