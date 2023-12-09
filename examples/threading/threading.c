@@ -1,7 +1,9 @@
+#define _GNU_SOURCE // use the gnu extension so we have pthread_tryjoin_mp available
 #include "threading.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 // Optional: use these functions to add debug or error prints to your application
 #define DEBUG_LOG(msg,...)
@@ -14,7 +16,20 @@ void* threadfunc(void* thread_param)
     // TODO: wait, obtain mutex, wait, release mutex as described by thread_data structure
     // hint: use a cast like the one below to obtain thread arguments from your parameter
     //struct thread_data* thread_func_args = (struct thread_data *) thread_param;
-    return thread_param;
+
+    struct thread_data* td_args = (struct thread_data *) thread_param;
+
+    usleep(td_args->wait_to_obtain_ms*1000);
+    while(pthread_mutex_trylock(td_args->mutex) != 0);
+    usleep(td_args->wait_to_release_ms*1000);
+    if (pthread_mutex_unlock(td_args->mutex) != 0)
+    {
+        perror("pthread_mutex_unlock");
+    }
+
+    td_args->thread_complete_success = true;
+
+    pthread_exit((void *)td_args);
 }
 
 
@@ -28,6 +43,31 @@ bool start_thread_obtaining_mutex(pthread_t *thread, pthread_mutex_t *mutex,int 
      *
      * See implementation details in threading.h file comment block
      */
-    return false;
+
+    int ret;
+    struct thread_data* td;
+    td = (struct thread_data*)malloc(sizeof(struct thread_data));
+
+    td->mutex = mutex;
+    td->wait_to_obtain_ms = wait_to_obtain_ms;
+    td->wait_to_release_ms = wait_to_release_ms;
+    td->thread_complete_success = false;
+
+    ret = pthread_create(thread, NULL, (void*)threadfunc, (void *)td);
+    if (ret) 
+    {
+        errno = ret;
+        perror("pthread_create");
+        return false;
+    }
+
+    pthread_tryjoin_np (*thread, NULL);
+    
+    if(td->thread_complete_success)
+    {
+        free(td);
+    }
+
+    return true;
 }
 
