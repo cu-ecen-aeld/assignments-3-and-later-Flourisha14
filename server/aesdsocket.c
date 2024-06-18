@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
             shutdown_server = true;
             continue;
         }
-        printf("%s\n", recv_buffer);
+        syslog(LOG_INFO,"%s\n", recv_buffer);
         if(recv_buffer[num_bytes - 1]=='\n')
         {
             if (write(fd, recv_buffer, num_bytes) == -1) 
