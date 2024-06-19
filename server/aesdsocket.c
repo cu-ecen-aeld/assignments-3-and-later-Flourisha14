@@ -188,6 +188,8 @@ void daemonize(void)
     open("/dev/null", O_RDWR); /*stdin*/
     dup(0); /*stdout*/
     dup(0); /*stderr*/
+
+    syslog(LOG_INFO, "Running in Daemon mode\n");
 }
 
 void register_signal_handler(void)
